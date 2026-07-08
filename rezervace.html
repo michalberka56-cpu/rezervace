@@ -73,22 +73,8 @@ input:focus{outline:none;border-color:var(--accent)}
 .tl{font-size:13px;color:var(--muted)}
 .td{font-size:12px;color:var(--muted);margin-top:2px}
 .ta{font-family:'DM Serif Display',serif;font-size:30px;color:var(--accent)}
-.ta.sleva{color:var(--success)}
-.sleva-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px;padding:8px 12px;background:var(--success-light);border-radius:8px;display:none}
-.sleva-row.show{display:flex}
-.sleva-label{font-size:13px;color:var(--success);font-weight:500}
-.sleva-val{font-size:13px;color:var(--success);font-weight:500}
 .extra-note{margin-top:10px;padding:10px 12px;background:#FEF9F0;border:1px solid #E8D8B0;border-radius:8px;font-size:12px;color:var(--warm);line-height:1.6;display:none}
-
-/* SLEVOVÝ KÓD */
-.kod-wrap{display:flex;gap:8px;align-items:flex-start}
-.kod-wrap input{flex:1}
-.kod-btn{height:44px;padding:0 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s}
-.kod-btn:hover{background:var(--accent-mid)}
-.kod-btn:disabled{background:#aaa;cursor:not-allowed}
-.kod-ok{font-size:13px;color:var(--success);font-weight:500;margin-top:6px;display:none}
-.kod-err{font-size:13px;color:var(--danger);margin-top:6px;display:none}
-
+.kod-info{font-size:12px;color:var(--muted);margin-top:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;line-height:1.6}
 .sub-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);height:52px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:500;cursor:pointer;margin-top:.75rem;letter-spacing:.02em;transition:background .15s,transform .1s}
 .sub-btn:hover{background:var(--accent-mid)}
 .sub-btn:active{transform:scale(.99)}
@@ -98,6 +84,7 @@ input:focus{outline:none;border-color:var(--accent)}
 .s-icon{width:56px;height:56px;background:var(--accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
 .success h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--accent);margin-bottom:.5rem}
 .success p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:1.5rem}
+.sleva-badge{display:inline-block;background:var(--success-light);color:var(--success);font-size:13px;font-weight:500;padding:6px 14px;border-radius:20px;margin-bottom:1rem}
 .qr-panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-top:1rem;text-align:left}
 .qr-panel h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--accent);margin-bottom:.25rem}
 .qr-sub{font-size:12px;color:var(--muted);margin-bottom:1rem;line-height:1.55}
@@ -206,12 +193,12 @@ input:focus{outline:none;border-color:var(--accent)}
   <!-- 4. SLEVOVÝ KÓD -->
   <div class="card">
     <div class="clabel">Slevový kód (nepovinné)</div>
-    <div class="kod-wrap">
-      <input type="text" id="f-kod" placeholder="Např. BONUS1" style="text-transform:uppercase">
-      <button type="button" class="kod-btn" id="kod-btn" onclick="overitKod()">Ověřit</button>
+    <div class="field" style="margin-bottom:0">
+      <input type="text" id="f-kod" placeholder="xxxxxxx" style="text-transform:uppercase">
     </div>
-    <div class="kod-ok" id="kod-ok"></div>
-    <div class="kod-err" id="kod-err"></div>
+    <div class="kod-info">
+      ℹ️ Slevový kód bude ověřen po odeslání poptávky. Platná sleva se automaticky promítne do platebních pokynů a QR kódu k úhradě.
+    </div>
   </div>
 
   <!-- 5. PLATBA -->
@@ -228,16 +215,6 @@ input:focus{outline:none;border-color:var(--accent)}
           <div class="td" id="t-detail">— vyberte termín</div>
         </div>
         <div class="ta" id="t-amount">—</div>
-      </div>
-      <div class="sleva-row" id="sleva-row">
-        <span class="sleva-label" id="sleva-label">Sleva</span>
-        <span class="sleva-val" id="sleva-val"></span>
-      </div>
-      <div class="total-main" id="po-sleve-wrap" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        <div>
-          <div class="tl" style="font-weight:500;color:var(--success)">Celkem po slevě</div>
-        </div>
-        <div class="ta sleva" id="t-po-sleve">—</div>
       </div>
       <div class="extra-note" id="extra-box">
         ℹ️ <strong>Závěrečný úklid + lůžkoviny/ručníky</strong> se platí hotově na místě:<br>
@@ -261,10 +238,11 @@ input:focus{outline:none;border-color:var(--accent)}
     </svg>
   </div>
   <h2>Poptávka odeslána!</h2>
+  <div id="sleva-badge" class="sleva-badge" style="display:none"></div>
   <p id="s-msg"></p>
   <div class="qr-panel">
     <h3>Platební QR kód</h3>
-    <p class="qr-sub">QR kód slouží pro případ, že vám potvrdíme rezervaci. Platbu prosím zašlete <strong>až po obdržení potvrzení</strong>.</p>
+    <p class="qr-sub">Platbu prosím zašlete <strong>až po obdržení potvrzení</strong> dostupnosti. Závěrečný úklid a pobytová taxa se platí hotově na místě.</p>
     <div class="qr-tabs">
       <button type="button" class="qr-tab sel" onclick="switchQR('EUR')">EUR — Fio banka</button>
       <button type="button" class="qr-tab" onclick="switchQR('CZK')">CZK — Fio banka</button>
@@ -282,14 +260,14 @@ const C = {
   minNights: { off: 3, peak: 5 },
   eur2czk: 25.5,
   bank: {
-    EUR: { iban:'CZ7420100000002100722034', bic:'FIOBCZPPXXX', owner:'Michal Berka', bank:'Fio banka, a.s.', cur:'EUR' },
-    CZK: { iban:'CZ8320100000002500722033', bic:'FIOBCZPPXXX', owner:'Michal Berka', bank:'Fio banka, a.s.', account:'2500722033/2010', cur:'CZK' }
+    EUR: { iban:'CZ7420100000002100722034', bic:'FIOBCZPPXXX', owner:'Michal Berka', bank:'Fio banka, a.s.' },
+    CZK: { iban:'CZ8320100000002500722033', bic:'FIOBCZPPXXX', owner:'Michal Berka', bank:'Fio banka, a.s.', account:'2500722033/2010' }
   },
   scriptUrl: 'https://script.google.com/macros/s/AKfycbz14zC_3TEdfkqMr5BO01WiQs2dFNCWZymd2PD56CrJXIMzUolxIxBodryEfIWyTmoZ/exec'
 };
 
 let selApts=[201], persons=2, cur='EUR', nightsCount=0, totalEUR=0, activeVS='';
-let platnyKod='', slevaProcent=0, overujeKod=false;
+let finalEUR=0, slevaProcent=0, platnyKod='';
 
 function togApt(n){
   const i=selApts.indexOf(n);
@@ -344,78 +322,24 @@ function calc(){
     document.getElementById('min-err').textContent='⚠ Minimální délka pobytu v této sezóně je '+minN+' noci.';
     document.getElementById('min-err').style.display='block';
   }
-  const apts=selApts.length;
-  totalEUR=total*apts;
+  totalEUR=total*selApts.length;
+  finalEUR=totalEUR;
   document.getElementById('nbar').classList.add('show');
   document.getElementById('nbar-val').textContent=nights+' '+(nights===1?'noc':nights<5?'noci':'nocí');
   document.getElementById('nbar-label').textContent=domSeason==='peak'?'Hlavní sezóna':'Vedlejší sezóna';
-  zobrazCeny();
-}
-
-function zobrazCeny(){
   const totalCZK=Math.round(totalEUR*C.eur2czk);
-  const apts=selApts.length;
-  const ci=document.getElementById('ci').value;
-  const domSeason=ci?getSeason(new Date(ci)):'off';
-  const detail=nightsCount+' nocí × '+apts+' apt × '+(domSeason==='peak'?C.prices.peak:C.prices.off)+' €/noc';
+  const detail=nights+' nocí × '+selApts.length+' apt × '+(domSeason==='peak'?C.prices.peak:C.prices.off)+' €/noc';
   document.getElementById('t-detail').textContent=detail;
   document.getElementById('t-amount').textContent=cur==='EUR'?totalEUR+' €':totalCZK.toLocaleString('cs')+' Kč';
-  document.getElementById('extra-box').style.display=totalEUR>0?'block':'none';
-
-  // Sleva
-  const sr=document.getElementById('sleva-row');
-  const pw=document.getElementById('po-sleve-wrap');
-  if(slevaProcent>0&&totalEUR>0){
-    const slevaEUR=Math.round(totalEUR*slevaProcent/100);
-    const poSleve=totalEUR-slevaEUR;
-    const poSleveCZK=Math.round(poSleve*C.eur2czk);
-    sr.classList.add('show');
-    document.getElementById('sleva-label').textContent='Sleva '+slevaProcent+'% ('+platnyKod+')';
-    document.getElementById('sleva-val').textContent=cur==='EUR'?'− '+slevaEUR+' €':'− '+Math.round(slevaEUR*C.eur2czk).toLocaleString('cs')+' Kč';
-    pw.style.display='flex';
-    document.getElementById('t-po-sleve').textContent=cur==='EUR'?poSleve+' €':poSleveCZK.toLocaleString('cs')+' Kč';
-  } else {
-    sr.classList.remove('show');
-    pw.style.display='none';
-  }
+  document.getElementById('extra-box').style.display='block';
 }
 
 function setCur(c){
   cur=c;
   document.querySelectorAll('.cur-btn').forEach((b,i)=>b.classList.toggle('sel',['EUR','CZK'][i]===c));
-  zobrazCeny();
+  calc();
 }
 
-// OVĚŘENÍ KÓDU — volá Apps Script
-function overitKod(){
-  const kod=document.getElementById('f-kod').value.trim().toUpperCase();
-  if(!kod){document.getElementById('kod-err').textContent='Zadejte kód.';document.getElementById('kod-err').style.display='block';return;}
-  
-  const btn=document.getElementById('kod-btn');
-  btn.disabled=true;btn.textContent='Ověřuji…';
-  document.getElementById('kod-ok').style.display='none';
-  document.getElementById('kod-err').style.display='none';
-
-  // Odeslat na Apps Script pro ověření
-  fetch(C.scriptUrl+'?akce=overKod&kod='+encodeURIComponent(kod), {method:'GET',mode:'no-cors'})
-  .then(()=>{
-    // no-cors neumožní číst odpověď — použijeme lokální ověření jako fallback
-    // Skutečné ověření proběhne při odeslání formuláře
-    platnyKod=kod;
-    // Dočasně nastavíme slevu jako "čeká na ověření" — skutečná sleva přijde ze serveru
-    document.getElementById('kod-ok').textContent='✓ Kód '+kod+' přijat — sleva bude potvrzena po odeslání poptávky.';
-    document.getElementById('kod-ok').style.display='block';
-    btn.disabled=false;btn.textContent='Ověřit';
-  })
-  .catch(()=>{
-    platnyKod=kod;
-    document.getElementById('kod-ok').textContent='✓ Kód '+kod+' bude ověřen při odeslání.';
-    document.getElementById('kod-ok').style.display='block';
-    btn.disabled=false;btn.textContent='Ověřit';
-  });
-}
-
-// QR KÓD
 function buildSEPA(amt,vs){
   const b=C.bank.EUR;
   return['BCD','002','1','SCT',b.bic,b.owner,b.iban,'EUR'+amt.toFixed(2),'',vs,'Rezervace apt '+vs].join('\n');
@@ -429,7 +353,7 @@ function renderQR(qcur,amt){
   box.innerHTML='';
   const str=qcur==='EUR'?buildSEPA(amt,activeVS):buildSPD(amt,activeVS);
   try{new QRCode(box,{text:str,width:200,height:200,colorDark:'#1A3D2B',colorLight:'#FFFFFF',correctLevel:QRCode.CorrectLevel.M});}
-  catch(e){box.innerHTML='<p style="color:var(--muted);font-size:13px">QR kód nelze zobrazit.</p>';}
+  catch(e){box.innerHTML='<p style="font-size:13px">QR kód nelze zobrazit.</p>';}
 }
 function renderBank(qcur,amt){
   const b=C.bank[qcur];
@@ -437,24 +361,23 @@ function renderBank(qcur,amt){
   const rows=[['Příjemce',b.owner],['IBAN',b.iban],['BIC/SWIFT',b.bic]];
   if(qcur==='CZK')rows.splice(2,0,['Číslo účtu',b.account]);
   rows.push(['Částka',amtStr],['Variabilní symbol',activeVS]);
+  if(slevaProcent>0)rows.push(['Uplatněná sleva',slevaProcent+'% ('+platnyKod+')']);
   document.getElementById('bk-table').innerHTML=rows.map(r=>`<div class="br"><span class="bk">${r[0]}</span><span class="bv">${r[1]}</span></div>`).join('');
 }
 function switchQR(qcur){
   document.querySelectorAll('.qr-tab').forEach((t,i)=>t.classList.toggle('sel',['EUR','CZK'][i]===qcur));
-  const slevaEUR=slevaProcent>0?Math.round(totalEUR*slevaProcent/100):0;
-  const finalEUR=totalEUR-slevaEUR;
   const amt=qcur==='EUR'?finalEUR:Math.round(finalEUR*C.eur2czk);
   renderQR(qcur,amt);
   renderBank(qcur,amt);
 }
 
-// ODESLÁNÍ
 function doSubmit(){
   const name=document.getElementById('f-name').value.trim();
   const email=document.getElementById('f-email').value.trim();
   const phone=document.getElementById('f-phone').value.trim();
   const ci=document.getElementById('ci').value;
   const co=document.getElementById('co').value;
+  const kod=document.getElementById('f-kod').value.trim().toUpperCase();
   let ok=true;
   if(!name||!email||!phone){document.getElementById('contact-err').style.display='block';ok=false;}
   else document.getElementById('contact-err').style.display='none';
@@ -463,10 +386,7 @@ function doSubmit(){
 
   activeVS=Date.now().toString().slice(-8);
   const apts=selApts.length===2?'201 + 202':'APT '+selApts[0];
-  const slevaEUR=slevaProcent>0?Math.round(totalEUR*slevaProcent/100):0;
-  const finalEUR=totalEUR-slevaEUR;
   const totalCZK=Math.round(totalEUR*C.eur2czk);
-  const finalCZK=Math.round(finalEUR*C.eur2czk);
 
   const btn=document.getElementById('sub-btn');
   btn.disabled=true;btn.textContent='Odesílám…';
@@ -476,25 +396,44 @@ function doSubmit(){
     prijezd:ci,odjezd:co,noci:nightsCount,mena:cur,
     celkem_eur:totalEUR+' EUR',celkem_czk:totalCZK+' CZK',
     variabilni_symbol:activeVS,
-    slevovy_kod:platnyKod||'',
-    sleva_procent:slevaProcent,
-    celkem_po_sleve_eur:slevaProcent>0?finalEUR+' EUR':'',
-    celkem_po_sleve_czk:slevaProcent>0?finalCZK+' CZK':''
+    slevovy_kod:kod,
+    sleva_procent:0,
+    celkem_po_sleve_eur:'',
+    celkem_po_sleve_czk:''
   };
 
-  fetch(C.scriptUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
-  .then(()=>showSuccess(name,email,apts,ci,co,finalEUR,finalCZK))
-  .catch(()=>showSuccess(name,email,apts,ci,co,finalEUR,finalCZK));
+  // Odeslat na Apps Script — ten ověří kód a vrátí slevu
+  fetch(C.scriptUrl,{
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  })
+  .then(()=>{
+    // no-cors neumožní číst odpověď — zobrazíme success bez slevy v QR
+    // Sleva bude potvrzena v e-mailu
+    showSuccess(name,email,apts,ci,co,totalEUR,totalCZK,0,'');
+  })
+  .catch(()=>{
+    showSuccess(name,email,apts,ci,co,totalEUR,totalCZK,0,'');
+  });
 }
 
-function showSuccess(name,email,apts,ci,co,finalEUR,finalCZK){
+function showSuccess(name,email,apts,ci,co,tEUR,tCZK,sleva,kod){
   document.getElementById('form-wrap').style.display='none';
-  const ss=document.getElementById('success');
-  ss.style.display='block';
-  const slevaText=slevaProcent>0?' Se slevou '+slevaProcent+'% ('+platnyKod+') — cena po slevě: <strong>'+finalEUR+' € / '+finalCZK.toLocaleString('cs')+' Kč</strong>.':'';
+  document.getElementById('success').style.display='block';
+
+  const badge=document.getElementById('sleva-badge');
+  if(kod){
+    badge.textContent='Kód '+kod+' byl přijat — sleva bude potvrzena v e-mailu';
+    badge.style.display='inline-block';
+  }
+
   document.getElementById('s-msg').innerHTML=
     'Děkujeme, <strong>'+name+'</strong>! Vaše poptávka na <strong>'+apts+'</strong> ('+ci+' → '+co+
-    ') byla přijata.'+slevaText+' Do 24 hodin vás kontaktujeme na <strong>'+email+'</strong>.';
+    ') byla přijata. Do 24 hodin vás kontaktujeme na <strong>'+email+'</strong> s potvrzením dostupnosti a platebními pokyny.';
+
+  finalEUR=tEUR;
   setTimeout(()=>switchQR(cur),150);
 }
 
