@@ -470,8 +470,11 @@ function doSubmit(){
   activeVS=Date.now().toString().slice(-8);
   const apts=selApts.length===2?'201 + 202':'APT '+selApts[0];
   const totalCZK=Math.round(totalEUR*C.eur2czk);
+
+  // Přepočítat finalEUR těsně před odesláním — zaručeně správná hodnota
+  const slevaEUR=slevaProcent>0?Math.round(totalEUR*slevaProcent/100):0;
+  finalEUR=totalEUR-slevaEUR;
   const finalCZK=Math.round(finalEUR*C.eur2czk);
-  const slevaEUR=totalEUR-finalEUR;
 
   const btn=document.getElementById('sub-btn');
   btn.disabled=true; btn.textContent='Odesílám…';
